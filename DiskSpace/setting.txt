@@ -1,0 +1,3 @@
+DiskSpace.dll은 bin 밑에 넣으세요
+
+http://donzbox.tistory.com/285
