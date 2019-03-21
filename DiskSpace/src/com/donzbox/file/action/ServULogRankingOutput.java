@@ -42,7 +42,8 @@ public class ServULogRankingOutput {
 	private final String DENYIP_OUT_ROOT   = "D:\\My Data\\MY FTP\\importDenyIP_02)outUser.";
 	private final String DENYIP_INOUT_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_03)inoutUser.";
 	private final String DENYIP_BLACK_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_04)blackUser.";
-	private final String NATION_ROOT       = new File("").getAbsolutePath() + File.separator + "DiskSpace" + File.separator + "properties" + File.separator + "nationCode.properties";
+	private final String NATION_ROOT_1     = new File("").getAbsolutePath() + File.separator + "DiskSpace" + File.separator + "properties" + File.separator + "nationCode.properties";
+	private final String NATION_ROOT_2     = new File("").getAbsolutePath() + File.separator + "properties" + File.separator + "nationCode.properties";
 
 	private final Map<String, String> map = new HashMap<>();
 	private static final String UP = "UP";
@@ -144,6 +145,7 @@ public class ServULogRankingOutput {
 		String strNM    = "";
 		String fileName = "";
 		File   listFile = null;
+
 		final File [] listFileArray = new File(NAMEDB_ROOT).listFiles();
 		for (int i=0 ; i<listFileArray.length ; i++) {
 			listFile = listFileArray[i];
@@ -832,9 +834,15 @@ public class ServULogRankingOutput {
 	public String getProperties(final String nation) {
 		String val = "";
 		BufferedReader br = null;
+		final Properties properties = new Properties();
 		try {
-			final Properties properties = new Properties();
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(NATION_ROOT),"EUC-KR"));
+			final File file1 = new File(NATION_ROOT_1);
+			final File file2 = new File(NATION_ROOT_2);
+			if(file1.isFile()) {
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(NATION_ROOT_1),"EUC-KR"));
+			} else if(file2.isFile()) {
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(NATION_ROOT_2),"EUC-KR"));
+			}
 			properties.load(br);
 
 			/* 전체검색
