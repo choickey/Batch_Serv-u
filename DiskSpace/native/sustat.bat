@@ -30,9 +30,8 @@ set todayMonth=
 echo :: 변수 지우기 :: todayMonth=
 
 if NOT %date:~5,2% == 12 (
-	cd "D:\My Data\WWW\App Source\batch\bin"
 	echo :: DiskSpaceOutput 실행
-	cd "D:\My Data\WWW\App Source\batch\DiskSpace"
+	cd "D:\My Data\WWW\App Source\Batch_DiskSpace\DiskSpace"
 	"C:\Program Files\Java\jdk1.8.0_181\bin\java" -jar target\DiskSpace.jar
 )
 
@@ -54,11 +53,8 @@ if %date:~5,2% == 12 (
    set todayYear=
    echo :: 변수 지우기 :: todayYear=
    
-   MKDIR "D:\My Data\WWW\App Source\batch\bin\DiskSpace"
-   copy "D:\My Data\WWW\App Source\batch\DiskSpace\DiskSpace.dll" "D:\My Data\WWW\App Source\batch\bin\DiskSpace\DiskSpace.dll"
-   cd "D:\My Data\WWW\App Source\batch\bin"
    echo :: DiskSpaceOutput 실행
-   cd "D:\My Data\WWW\App Source\batch\DiskSpace"
+   cd "D:\My Data\WWW\App Source\Batch_DiskSpace\DiskSpace"
    "C:\Program Files\Java\jdk1.8.0_181\bin\java" -Xms8192m -Xmx8192m -jar target\DiskSpace.jar
    
    cd "D:\My Data\WWW\Ftp Factory\ftp.DonzBox.com_Result\sustat"
