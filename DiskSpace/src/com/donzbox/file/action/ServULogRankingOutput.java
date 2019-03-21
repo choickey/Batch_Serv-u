@@ -26,23 +26,25 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 public class ServULogRankingOutput {
 
 	private static final String [] H_LEVEL = {"Ⅰ","Ⅱ","Ⅲ","Ⅳ","Ⅴ","Ⅵ","Ⅶ","Ⅷ","Ⅸ","Ⅹ"};
-	private static final String [] L_LEVEL = {"ⅰ","ⅱ","ⅲ","ⅳ","ⅴ","ⅵ","ⅶ","ⅷ","ⅸ","ⅹ"}; 
+	private static final String [] L_LEVEL = {"ⅰ","ⅱ","ⅲ","ⅳ","ⅴ","ⅵ","ⅶ","ⅷ","ⅸ","ⅹ"};
 
-	private String NAMEDB_ROOT       = "D:\\My Data\\WWW\\Ftp Factory\\Serv-U\\Users\\DonzBox.com";
-	private String BLACKLIST_ROOT    = "D:\\My Data\\MY FTP\\FTP ROOT BLACKLIST";
-	private String DENYIP_IN_ROOT    = "D:\\My Data\\MY FTP\\importDenyIP_01)inUser.";
-	private String DENYIP_OUT_ROOT   = "D:\\My Data\\MY FTP\\importDenyIP_02)outUser.";
-	private String DENYIP_INOUT_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_03)inoutUser.";
-	private String DENYIP_BLACK_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_04)blackUser.";
-	private String NATION_ROOT       = "D:\\My Data\\WWW\\App Source\\DiskSpace\\properties\\nationCode.properties";
-	
-	private Map<String, String> map = new HashMap<String, String>();
+	private final String NAMEDB_ROOT       = "D:\\My Data\\WWW\\Ftp Factory\\Serv-U\\Users\\DonzBox.com";
+	private final String BLACKLIST_ROOT    = "D:\\My Data\\MY FTP\\FTP ROOT BLACKLIST";
+	private final String DENYIP_IN_ROOT    = "D:\\My Data\\MY FTP\\importDenyIP_01)inUser.";
+	private final String DENYIP_OUT_ROOT   = "D:\\My Data\\MY FTP\\importDenyIP_02)outUser.";
+	private final String DENYIP_INOUT_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_03)inoutUser.";
+	private final String DENYIP_BLACK_ROOT = "D:\\My Data\\MY FTP\\importDenyIP_04)blackUser.";
+	private final String NATION_ROOT       = new File("").getAbsolutePath() + File.separator + "DiskSpace" + File.separator + "properties" + File.separator + "nationCode.properties";
+
+	private final Map<String, String> map = new HashMap<>();
 	private static final String UP = "UP";
 	private static final String DN = "DN";
 	private static final String PO = "PO";
@@ -62,35 +64,35 @@ public class ServULogRankingOutput {
 	private String notice_root;
 	private String report_date;
 	private ServULogAnalyzer sla;
-	private DecimalFormat dft  = new DecimalFormat("#,##0.00");
-	private DecimalFormat dfg  = new DecimalFormat("#,##0.0");
-	private DecimalFormat dfr  = new DecimalFormat("00");
-	private DecimalFormat df1  = new DecimalFormat("00000000");
-//	private DecimalFormat df   = new DecimalFormat("#,##0.0G");
+	private final DecimalFormat dft  = new DecimalFormat("#,##0.00");
+	private final DecimalFormat dfg  = new DecimalFormat("#,##0.0");
+	private final DecimalFormat dfr  = new DecimalFormat("00");
+	private final DecimalFormat df1  = new DecimalFormat("00000000");
+	//	private DecimalFormat df   = new DecimalFormat("#,##0.0G");
 	private boolean theEndOfTheYearChk    = false;
-	private List<String> upLoader         = new ArrayList<String>();
-	private List<String> denyIP_inUser    = new ArrayList<String>();
-	private List<String> denyIP_outUser   = new ArrayList<String>();
-	private List<String> denyIP_inoutUser = new ArrayList<String>();
-	private List<String> denyIP_krjpUser  = new ArrayList<String>();
+	private final List<String> upLoader         = new ArrayList<>();
+	private final List<String> denyIP_inUser    = new ArrayList<>();
+	private final List<String> denyIP_outUser   = new ArrayList<>();
+	private final List<String> denyIP_inoutUser = new ArrayList<>();
+	private final List<String> denyIP_krjpUser  = new ArrayList<>();
 
-	private DiskSpaceOutput dso  = new DiskSpaceOutput();
-	
+	private final DiskSpaceOutput dso  = new DiskSpaceOutput();
+
 	public ServULogRankingOutput() {
 	}
 
-	public ServULogRankingOutput(String notice_root, String [] args) {
+	public ServULogRankingOutput(final String notice_root, final String [] args) {
 		this.notice_root = notice_root;
 		try {
 			// ID를 이름으로 미리 변환
-			Map<String, String> mapIDtoName = makeHashIDtoName();
-			
+			final Map<String, String> mapIDtoName = makeHashIDtoName();
+
 			// 랭킹 기초 데이터 추출
-			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMM");
-			SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy");
-			Calendar cal = Calendar.getInstance();
-			Date date = cal.getTime();
-			DateFormat df2 = new SimpleDateFormat("M");
+			final SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMM");
+			final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy");
+			final Calendar cal = Calendar.getInstance();
+			final Date date = cal.getTime();
+			final DateFormat df2 = new SimpleDateFormat("M");
 			// 링킹 초기화
 			if (args.length > 0) {
 				report_date = args[0];
@@ -103,15 +105,15 @@ public class ServULogRankingOutput {
 				}
 			}
 			sla = new ServULogAnalyzer(report_date, mapIDtoName);
-			
+
 			System.out.println("\n### 랭킹갱신");
 			getRanking();
-			
-			List<String> illegal = sla.illegalLog();
+
+			final List<String> illegal = sla.illegalLog();
 			System.out.println("\n### 불법 IP : 대문갱신");
 			denyIP_outUser.add("\"IP\",\"Description\",\"Allow\"");
 			getIllegalLog(illegal);
-			
+
 			System.out.println("\n### Serv-U용 importDenyIP 출력");
 			makeFileDenyIpList (DENYIP_IN_ROOT   , denyIP_inUser);
 			makeFileDenyIpList (DENYIP_OUT_ROOT  , denyIP_outUser);
@@ -121,11 +123,11 @@ public class ServULogRankingOutput {
 			mergeFileDenyIpList(DENYIP_OUT_ROOT);
 			mergeFileDenyIpList(DENYIP_INOUT_ROOT);
 			mergeFileDenyIpList(DENYIP_BLACK_ROOT);
-			
+
 			System.out.println("\n### 불법 IP : 대문 -> BLACKLIST 복사");
 			copyRoot2BlackList();
-			
-		} catch (Exception e) {
+
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -133,64 +135,68 @@ public class ServULogRankingOutput {
 	public Map<String, String> makeHashIDtoName() {
 		return makeHashIDtoName(true);
 	}
-	
+
 	// boolean true  : 이름 중간에 X표시
 	// boolean false : FULL NAME
-	public Map<String, String> makeHashIDtoName(boolean b) {
+	public Map<String, String> makeHashIDtoName(final boolean b) {
 		String strRL    = null;
 		String strID    = "";
 		String strNM    = "";
 		String fileName = "";
 		File   listFile = null;
-		File [] listFileArray = new File(NAMEDB_ROOT).listFiles();
+		final File [] listFileArray = new File(NAMEDB_ROOT).listFiles();
 		for (int i=0 ; i<listFileArray.length ; i++) {
 			listFile = listFileArray[i];
 			fileName = listFile.getName();
 			if (fileName.lastIndexOf(".Archive") > -1 && fileName.lastIndexOf(".Backup") == -1) {
 				try {
-				    //BufferedReader in = new BufferedReader(new FileReader(listFile.getPath())); // 한글깨짐 그래서 아래로 인코딩(txt 파일처럼 ansi 로 인코딩된경우에만) 
-				    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(listFile.getPath()), "UTF-8"));
-				    
-				    while ((strRL = in.readLine()) != null) {
-                        if ("LoginID".equals(strRL)) {
-                            in.readLine();
-                            in.readLine();
-                            in.readLine();
-                            strID = in.readLine();
-                        }
-                        if ("FullName".equals(strRL)) {
-                            in.readLine();
-                            in.readLine();
-                            in.readLine();
-                            strNM = in.readLine();
-                            break;
-				    	}
-				    }
-				    in.close();
-				    if (!"".equals(strNM)) {
-				    	strID = strID.toUpperCase();
-//				    	System.out.println("[" + (cnt++) + "] map.put(" + strID + ", " + strNM + ");");
-				    	// 이름의 성에 X 표시 여부
-				    	strNM = b?strNM.substring(0, 1) + "ｘ" + (strNM.length()==3?strNM.substring(2, 3):""):strNM;
-					    map.put(strID, strNM);
-					    strID = "";
-					    strNM = "";
-				    }
-				} catch (IOException e) {
-				    e.printStackTrace();
+					//BufferedReader in = new BufferedReader(new FileReader(listFile.getPath())); // 한글깨짐 그래서 아래로 인코딩(txt 파일처럼 ansi 로 인코딩된경우에만)
+					final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(listFile.getPath()), "UTF-8"));
+
+					while ((strRL = in.readLine()) != null) {
+						if ("LoginID".equals(strRL)) {
+							in.readLine();
+							in.readLine();
+							in.readLine();
+							strID = in.readLine();
+						}
+						if ("FullName".equals(strRL)) {
+							in.readLine();
+							in.readLine();
+							in.readLine();
+							strNM = in.readLine();
+							break;
+						}
+					}
+					in.close();
+					if (!"".equals(strNM)) {
+						strID = strID.toUpperCase();
+						//				    	System.out.println("[" + (cnt++) + "] map.put(" + strID + ", " + strNM + ");");
+						// 이름의 성에 X 표시 여부
+						strNM = b?strNM.substring(0, 1) + "ｘ" + (strNM.length()==3?strNM.substring(2, 3):""):strNM;
+						map.put(strID, strNM);
+						strID = "";
+						strNM = "";
+					}
+				} catch (final IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
 		return map;
-	}	
-	
-	public String id2name(String id, String strDN, String strUP, String flag, String rankNick) {
+	}
+
+	public String id2name(String id, final String strDN, final String strUP, final String flag, final String rankNick) {
 		String name = id;
 
 		for (int i=0 ; i<upLoader.size() ; i++) {
 			if(id.equals(upLoader.get(i))) {
-				String star = "";for (int s=0 ; s<5-i ; s++) star=star+"★";
-				if ("0.00".equals(strUP)) return name;
+				String star = "";for (int s=0 ; s<5-i ; s++) {
+					star=star+"★";
+				}
+				if ("0.00".equals(strUP)) {
+					return name;
+				}
 				// full id 가리기
 				id = id.substring(0, id.length()-1) + "＊";
 				if ("Best5".equals(flag)) {
@@ -199,24 +205,26 @@ public class ServULogRankingOutput {
 					name = "(" + m2g(strDN, true) + ")  " + rankNick + (i+1) + ".UP " + star + " " + id + " " + star + " " + "UP." + (i+1);
 				}
 				break;
-//			} else {
-//				name = (String) map.get(id);
-//				if (name==null) name = (id.substring(0, id.length()-1) + "＊") + " (인증필요)";
-//				float fltUP = Float.parseFloat(m2g(strUP, false));
-////				float fltDN = Float.parseFloat(m2g(strDN));
-//				// full id 가리기
-//				if (fltUP < 0.6f) {
-//					name = "(" + m2g(strDN, true) + ")  " + rankNick + name + ("0.00".equals(strUP)?"":", (업로드 " + m2g(strUP, true)+")") + "";
-//				} else {
-//					name = "(" + m2g(strDN, true) + ")  " + rankNick + id   + ("0.00".equals(strUP)?"":", (업로드 " + m2g(strUP, true)+")") + "";
-//				}
+				//			} else {
+				//				name = (String) map.get(id);
+				//				if (name==null) name = (id.substring(0, id.length()-1) + "＊") + " (인증필요)";
+				//				float fltUP = Float.parseFloat(m2g(strUP, false));
+				////				float fltDN = Float.parseFloat(m2g(strDN));
+				//				// full id 가리기
+				//				if (fltUP < 0.6f) {
+				//					name = "(" + m2g(strDN, true) + ")  " + rankNick + name + ("0.00".equals(strUP)?"":", (업로드 " + m2g(strUP, true)+")") + "";
+				//				} else {
+				//					name = "(" + m2g(strDN, true) + ")  " + rankNick + id   + ("0.00".equals(strUP)?"":", (업로드 " + m2g(strUP, true)+")") + "";
+				//				}
 			}
 		}
 		// 속에 있는 로직 밖으로 빼냈음 (uploader가 없는 경우고 다운로드왕만 있는 경우 용량 처리가 되지 않기 때문에)
-		name = (String) map.get(id);
-		if (name==null) name = (id.substring(0, id.length()-1) + "＊") + " (인증필요)";
-		float fltUP = Float.parseFloat(m2g(strUP, false));
-//			float fltDN = Float.parseFloat(m2g(strDN));
+		name = map.get(id);
+		if (name==null) {
+			name = (id.substring(0, id.length()-1) + "＊") + " (인증필요)";
+		}
+		final float fltUP = Float.parseFloat(m2g(strUP, false));
+		//			float fltDN = Float.parseFloat(m2g(strDN));
 		// full id 가리기
 		if (fltUP < 0.6f) {
 			name = "(" + m2g(strDN, true) + ")  " + rankNick + name + ("0.00".equals(strUP)?"":", (업로드 " + m2g(strUP, true)+")") + "";
@@ -225,11 +233,11 @@ public class ServULogRankingOutput {
 		}
 		return name;
 	}
-	public void getIllegalLog(List<String> illegal, String blacklist_root) {
+	public void getIllegalLog(final List<String> illegal, final String blacklist_root) {
 		this.notice_root = blacklist_root;
 		getIllegalLog(illegal);
 	}
-	public void getIllegalLog(List<String> illegal) {
+	public void getIllegalLog(final List<String> illegal) {
 
 		// 블랙리스트 D69)의 가변 디렉토리 삭제
 		File file = new File(BLACKLIST_ROOT);
@@ -262,15 +270,17 @@ public class ServULogRankingOutput {
 
 		// D69)의 가변 디렉토리 생성
 		System.out.print("\t03. 불법IP목록 생성\n\t");
-		String iIllegaInfo = "\\" + REPORT_ILLEGAL + "IP：" + illegal.get(0) + "건에 대한 리스트 보기 ★\\";
+		final String iIllegaInfo = "\\" + REPORT_ILLEGAL + "IP：" + illegal.get(0) + "건에 대한 리스트 보기 ★\\";
 		setDirectoryName(iIllegaInfo, REPORT_ILLEGAL);
 		String txt="", country="", ip="", num="";
 		for (int i=1 ; i<illegal.size() ; i++) {
-			
-//			System.out.println(illegal.get(i));
+
+			//			System.out.println(illegal.get(i));
 			System.out.print(String.format("%5s", i));
-			if (i%30 == 0) System.out.print("\n\t");
-			
+			if (i%30 == 0) {
+				System.out.print("\n\t");
+			}
+
 			txt = illegal.get(i);
 			if (txt.contains("] ") && txt.contains("：") && txt.contains(D1)) {
 				country = txt.substring(txt.indexOf(") [") +2, txt.indexOf(") [") +7);
@@ -288,11 +298,11 @@ public class ServULogRankingOutput {
 		}
 		System.out.println();
 	}
-	
+
 	public void getRanking() {
 
 		String rankInfo = "";
-		
+
 		String [] ct = null;
 		String [] fct = null;
 		try {
@@ -300,38 +310,52 @@ public class ServULogRankingOutput {
 			deleteSubDirectory(notice_root + REPORT_KIND_DN_MORE);
 			deleteSubDirectory(notice_root + REPORT_KIND_UP_MORE);
 			deleteSubDirectory(notice_root + REPORT_KIND_PO_MORE);
-		} catch(Exception e) {
+		} catch(final Exception e) {
 		}
 		ct = getContext(UP);
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			fct = getFilterContextUPDN(ct[j]);
 			upLoader.add(fct[0]);
-			if (j==UPDN_TOTAL_RANKING-1) break;
+			if (j==UPDN_TOTAL_RANKING-1) {
+				break;
+			}
 		}
-			
+
 		// fct[0]:name, fct[1]:dn, fct[2]:up
 		// 다운로더 TOP 화면
 		System.out.println("\t01. 다운로더 갱신");
 		ct = getContext(DN);
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			fct = getFilterContextUPDN(ct[j]);
-			if ("0.00".equals(fct[1])) continue;
+			if ("0.00".equals(fct[1])) {
+				continue;
+			}
 			rankInfo = "\\" + getKingOrGod(REPORT_KIND_DNK, j) + (j+1) + "위.  " + id2name(fct[0], fct[1], fct[2], "Best5", getRankNick(fct[1]));
 			// 다운로드 1위는 다운신으로 명명
 			if (!theEndOfTheYearChk && j == 0) {
 				rankInfo = "\\" + REPORT_KIND_DNK + (j+1) + "위.  " + id2name(fct[0], fct[1], fct[2], "Best5", "다운신 ");
 			}
 			setDirectoryName(rankInfo, REPORT_KIND_DNK);
-			if (j==UPDN_TOTAL_RANKING-1) break;
+			if (j==UPDN_TOTAL_RANKING-1) {
+				break;
+			}
 		}
 		// 더보기
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			fct = getFilterContextUPDN(ct[j]);
 
-			if ("0.00".equals(fct[1])) continue;
+			if ("0.00".equals(fct[1])) {
+				continue;
+			}
 			rankInfo = REPORT_KIND_DN_MORE + getKingOrGod(REPORT_KIND_DNK, j).substring(6) + dfr.format((j+1)) + "위.  " + id2name(fct[0], fct[1], fct[2], "All", getRankNick(fct[1]));
 			//  다운로드 1위는 다운신으로 명명
 			if (!theEndOfTheYearChk && j == 0) {
@@ -339,32 +363,50 @@ public class ServULogRankingOutput {
 			}
 			setDirectoryName(rankInfo, REPORT_KIND_DNK);
 		}
-		
+
 		// fct[0]:name, fct[1]:dn, fct[2]:up
 		// 업로더 TOP 화면
 		System.out.println("\t02. 업로더 갱신");
 		ct = getContext(UP);
 		String id ="";
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			fct = getFilterContextUPDN(ct[j]);
-			if ("0.00".equals(fct[1])) continue;
-			String star = "";for (int s=0 ; s<5-j ; s++) star=star+"★";
+			if ("0.00".equals(fct[1])) {
+				continue;
+			}
+			String star = "";for (int s=0 ; s<5-j ; s++) {
+				star=star+"★";
+			}
 			// full id 가리기
 			id = fct[0]; id = id.substring(0, id.length()-1) + "＊";
 			rankInfo = "\\" + getKingOrGod(REPORT_KIND_UPK, j) + (j+1) + "위.  (" + m2g(fct[1], true) + ") " + star + " " + id;
 			setDirectoryName(rankInfo, REPORT_KIND_UPK);
-			if (j==UPDN_TOTAL_RANKING-1) break;
+			if (j==UPDN_TOTAL_RANKING-1) {
+				break;
+			}
 		}
 		// 더보기
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			fct = getFilterContextUPDN(ct[j]);
-			if ("0.00".equals(fct[1])) continue;
-			String star = "";if (j<5) { for (int s=0 ; s<5-j ; s++) star=star+"★";}
+			if ("0.00".equals(fct[1])) {
+				continue;
+			}
+			String star = "";if (j<5) { for (int s=0 ; s<5-j ; s++) {
+				star=star+"★";
+			}}
 			if (j==5) { star="☆";}
-			if (6<=j && j<=15) star=H_LEVEL[j-6]+".";
-			if (16<=j && j<=25) star=L_LEVEL[j-16]+".";
+			if (6<=j && j<=15) {
+				star=H_LEVEL[j-6]+".";
+			}
+			if (16<=j && j<=25) {
+				star=L_LEVEL[j-16]+".";
+			}
 			// full id 가리기
 			id = fct[0]; id = id.substring(0, id.length()-1) + "＊";
 			rankInfo = REPORT_KIND_UP_MORE + getKingOrGod(REPORT_KIND_UPK, j).substring(6) + dfr.format((j+1)) + "위.  (" + m2g(fct[1], true) + ") " + star + " " + id;
@@ -375,24 +417,30 @@ public class ServULogRankingOutput {
 		System.out.println("\t03. 인기파일 갱신");
 		ct = getContext(PO);
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			if (!(ct[j].toLowerCase().contains("[y]") || ct[j].contains("adult"))) {
 				rankInfo = "\\" + REPORT_KIND_PO + (j+1) + "위.  " + getFilterContextPO(ct[j]);
 				setDirectoryName(rankInfo, REPORT_KIND_PO);
 			}
-			if (j==UPDN_TOTAL_RANKING*2-1) break;
+			if (j==UPDN_TOTAL_RANKING*2-1) {
+				break;
+			}
 		}
 		for (int j=0 ; j<ct.length ; j++) {
-			if (ct[j] == null) break;
+			if (ct[j] == null) {
+				break;
+			}
 			if (!(ct[j].toLowerCase().contains("[y]") || ct[j].contains("adult"))) {
 				rankInfo = REPORT_KIND_PO_MORE + REPORT_KIND_PO.substring(6) + dfr.format((j+1)) + "위.  " + getFilterContextPO(ct[j]);
 				setDirectoryName(rankInfo, REPORT_KIND_PO);
 			}
 		}
 	}
-	
+
 	// 연말 총결산때 1~3위는 "신"이라는 명칭 부여, 1월~11월까지는 "왕"이라는 명칭 부여
-	public String getKingOrGod(String type, int rank) {
+	public String getKingOrGod(String type, final int rank) {
 		if (0 <= rank && rank <3) {
 			if (REPORT_KIND_UPK.equals(type)) {
 				type = theEndOfTheYearChk?REPORT_KIND_UPG:REPORT_KIND_UPK;
@@ -402,11 +450,11 @@ public class ServULogRankingOutput {
 		}
 		return type;
 	}
-	
-	public String getRankNick(String dn) {
+
+	public String getRankNick(final String dn) {
 		String result = "";
-		float dnSize = Float.parseFloat(dn)/1024F;
-		
+		final float dnSize = Float.parseFloat(dn)/1024F;
+
 		if (!theEndOfTheYearChk) {
 			if (dnSize > 120.00F) {
 				result = "대통령 ";
@@ -449,13 +497,13 @@ public class ServULogRankingOutput {
 		}
 		return result;
 	}
-	
-	public String m2g(String strMegaByte, boolean flag) {
+
+	public String m2g(final String strMegaByte, final boolean flag) {
 		float fltMegaByte = Float.parseFloat(strMegaByte);
 		fltMegaByte = fltMegaByte/1024f;
-		if (dfg.format(fltMegaByte).equals("0.0"))
+		if (dfg.format(fltMegaByte).equals("0.0")) {
 			return flag?"0.1G":"0.1";
-		else {
+		} else {
 			if ((dfg.format(fltMegaByte)).length() < 7) {
 				return flag?dfg.format(fltMegaByte)+"G":dfg.format(fltMegaByte);
 			} else {
@@ -463,24 +511,24 @@ public class ServULogRankingOutput {
 			}
 		}
 	}
-	
+
 	public String g2t(float fltGigaByte) {
 		fltGigaByte = fltGigaByte/1024f;
 		return dft.format(fltGigaByte);
 	}
-	
-	public void setDirectoryName(String info, String kind) {
+
+	public void setDirectoryName(String info, final String kind) {
 		try {
 			new File(notice_root);
 			if (REPORT_KIND_DNK.equals(kind) ||
-				REPORT_KIND_UPK.equals(kind) ||
-				REPORT_KIND_PO.equals(kind)) {
-				String path = notice_root + info;
+					REPORT_KIND_UPK.equals(kind) ||
+					REPORT_KIND_PO.equals(kind)) {
+				final String path = notice_root + info;
 				makeDir(path.trim());
 				/* java ver 1.7 over
 				Path newDir = FileSystems.getDefault().getPath(path.trim());
 				Files.createDirectory(newDir);		// 디릭토리 마지막에 공백이 드가면 에러나므로 trim 처리했음
-				*/
+				 */
 			}
 			if (REPORT_ILLEGAL.equals(kind)) {
 				// ip 정보를 기반으로 whois 검색하여 접근지 소재 파악
@@ -493,53 +541,53 @@ public class ServULogRankingOutput {
 					/* java ver 1.7 over
 					Path newDir = FileSystems.getDefault().getPath(info.trim());
 					Files.createDirectory(newDir);		// 디릭토리 마지막에 공백이 드가면 에러나므로 trim 처리했음
-					*/
+					 */
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public void deleteSubDirectory(String directoryPath) {
+
+	public void deleteSubDirectory(final String directoryPath) {
 		String fileName = "";
-		File[] listFile = new File(directoryPath).listFiles();
+		final File[] listFile = new File(directoryPath).listFiles();
 		try {
 			if (listFile.length > 0) {
 				for (int i = 0; i < listFile.length; i++) {
 					if (listFile[i].isFile()) {
-//						System.out.println("\t파일 삭제 : " + listFile[i].getAbsolutePath());
+						//						System.out.println("\t파일 삭제 : " + listFile[i].getAbsolutePath());
 						listFile[i].delete();
 					} else {
 						deleteSubDirectory(listFile[i].getPath());
 					}
 					fileName = listFile[i].getName();
 					if (fileName.contains(REPORT_KIND_UPK)
-					 || fileName.contains(REPORT_KIND_UPG)
-				     || fileName.contains(REPORT_KIND_DNK)
-				     || fileName.contains(REPORT_KIND_DNG)
-				     || fileName.contains(REPORT_KIND_PO)
-				     || fileName.contains("다운왕 ")
-				     || fileName.contains("다운神 ")
-				     || fileName.contains("업로드왕 ")
-				     || fileName.contains("업로드神 ")
-				     || fileName.contains("인기자료 ")
-				     || fileName.contains("）")
-					) {
-//						System.out.println("\t폴더 삭제 : " + listFile[i].getAbsolutePath());
+							|| fileName.contains(REPORT_KIND_UPG)
+							|| fileName.contains(REPORT_KIND_DNK)
+							|| fileName.contains(REPORT_KIND_DNG)
+							|| fileName.contains(REPORT_KIND_PO)
+							|| fileName.contains("다운왕 ")
+							|| fileName.contains("다운神 ")
+							|| fileName.contains("업로드왕 ")
+							|| fileName.contains("업로드神 ")
+							|| fileName.contains("인기자료 ")
+							|| fileName.contains("）")
+							) {
+						//						System.out.println("\t폴더 삭제 : " + listFile[i].getAbsolutePath());
 						listFile[i].delete();
 					}
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			System.err.println(System.err);
 		}
 	}
-	
-	public String [] getContext(String type) {
-		
-		List<String> list = new ArrayList<String>();
-		String [] rangking = new String[PO_TOTAL_RANKING];
+
+	public String [] getContext(final String type) {
+
+		final List<String> list = new ArrayList<>();
+		final String [] rangking = new String[PO_TOTAL_RANKING];
 		try {
 			if (DN.equals(type)) {
 				list.addAll(sla.sentLog());
@@ -558,89 +606,103 @@ public class ServULogRankingOutput {
 				list.clear();
 				list.addAll(sla.popularLog());
 				int intPO = PO_TOTAL_RANKING;
-				if (PO_TOTAL_RANKING > list.size()) intPO = list.size();
+				if (PO_TOTAL_RANKING > list.size()) {
+					intPO = list.size();
+				}
 				for (int i=0 ; i<intPO ; i++) {
 					rangking[i] = list.get(i);
 				}
 			}
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 		return rangking;
 	}
-	
-	public String [] getFilterContextUPDN(String context) {
-		String [] returnValue = new String[3];
-		String [] contextArray = context.split(D1);
+
+	public String [] getFilterContextUPDN(final String context) {
+		final String [] returnValue = new String[3];
+		final String [] contextArray = context.split(D1);
 		int cnt = 0;
-		for (String tmp : contextArray) {
+		for (final String tmp : contextArray) {
 			if (tmp.length()!=0 ) {
-				if(cnt==0) returnValue[0] = tmp;
-				if(cnt==1) returnValue[1] = tmp;
-				if(cnt==2) returnValue[2] = tmp;
+				if(cnt==0) {
+					returnValue[0] = tmp;
+				}
+				if(cnt==1) {
+					returnValue[1] = tmp;
+				}
+				if(cnt==2) {
+					returnValue[2] = tmp;
+				}
 				cnt++;
 			}
 		}
 		return returnValue;
 	}
-	
+
 	public String getFilterContextPO(String context) {
-		String [] contextArray = context.split("\\\\");
+		final String [] contextArray = context.split("\\\\");
 		context = contextArray[contextArray.length-1];
 		context = context.split(D1)[0];
 		return context;
 	}
-	
-	public void makeWhoisFile(String info) {
+
+	public void makeWhoisFile(final String info) {
 		// info : 디렉토리 + D1 + 접속횟수 + D1 + 접속IP + D1 + 접속IDs + D1 + 접속기간 + D1 + 회원포함여부
 		String countryEN = "";
 		String countryKO = "";
 		String address = "";
 		String context = "";
 		String path    = notice_root + info.split(D1)[0];
-		       path    = dso.changeToDirChar(path);
+		path    = dso.changeToDirChar(path);
 		String num     = info.split(D1)[1];
-		String ip      = info.split(D1)[2];
-		String ids     = info.split(D1)[3];
-		String time    = info.split(D1)[4];
-		String members = info.split(D1)[5];
-		String time1   = time.substring( 0,  4) + "/" + time.substring( 4,  6) + "/" + time.substring( 6,  8) + " "
-		    		   + time.substring( 8, 10) + ":" + time.substring(10, 12) + ":" + time.substring(12, 14) + "～\r\n"
-		               + time.substring(14, 18) + "/" + time.substring(18, 20) + "/" + time.substring(20, 22) + " "
-		    		   + time.substring(22, 24) + ":" + time.substring(24, 26) + ":" + time.substring(26, 28);
-		String time2   = time.substring(18, 20) + "월" + time.substring(20, 22) + "일 "
-		    		   + time.substring(22, 24) + "시" + time.substring(24, 26) + "분";
-		String path1 = path.substring(0, path.indexOf("）") +1);
-		String path2 = path.substring(path.indexOf("）") +1 , path.lastIndexOf("："));
-		String path3 = path.substring(path.lastIndexOf("："), path.length());
+		final String ip      = info.split(D1)[2];
+		final String ids     = info.split(D1)[3];
+		final String time    = info.split(D1)[4];
+		final String members = info.split(D1)[5];
+		final String time1   = time.substring( 0,  4) + "/" + time.substring( 4,  6) + "/" + time.substring( 6,  8) + " "
+				+ time.substring( 8, 10) + ":" + time.substring(10, 12) + ":" + time.substring(12, 14) + "～\r\n"
+				+ time.substring(14, 18) + "/" + time.substring(18, 20) + "/" + time.substring(20, 22) + " "
+				+ time.substring(22, 24) + ":" + time.substring(24, 26) + ":" + time.substring(26, 28);
+		final String time2   = time.substring(18, 20) + "월" + time.substring(20, 22) + "일 "
+				+ time.substring(22, 24) + "시" + time.substring(24, 26) + "분";
+		final String path1 = path.substring(0, path.indexOf("）") +1);
+		final String path2 = path.substring(path.indexOf("）") +1 , path.lastIndexOf("："));
+		final String path3 = path.substring(path.lastIndexOf("："), path.length());
 		String path5 = "";
-		
-		String nationInfo = getNation(ip);
+
+		final String nationInfo = getNationByApnic(ip);
 		countryEN = nationInfo.split(D1)[0];
 		countryKO = nationInfo.split(D1)[1];
 		address = nationInfo.split(D1)[2];
 		context = nationInfo.split(D1)[3];
-		
+
 		// IDs의 중복제거
 		String nVal="", ids1="", ids2="";
-		Map<String, String> map = makeHashIDtoName(false);
-		List<String> idsList = Arrays.asList(ids.split(","));       
-		TreeSet<String> distinctVerifi = new TreeSet<String>(idsList);
-		idsList = new ArrayList<String>(distinctVerifi);
+		final Map<String, String> map = makeHashIDtoName(false);
+		List<String> idsList = Arrays.asList(ids.split(","));
+		final TreeSet<String> distinctVerifi = new TreeSet<>(idsList);
+		idsList = new ArrayList<>(distinctVerifi);
 		for (int i=0 ; i<idsList.size() ; i++) {
 			nVal = map.get(idsList.get(i).toUpperCase());
-			if (nVal != null) ids1 = ids1 + idsList.get(i) + "(" + nVal + "),";
+			if (nVal != null) {
+				ids1 = ids1 + idsList.get(i) + "(" + nVal + "),";
+			}
 			ids2 = ids2 + idsList.get(i) + ",";
 		}
-		if (ids1.length() > 0) ids1 = "[" + ids1.substring(0, ids1.length() -1) + "] ";
-		if (ids2.length() > 0) ids2 =       ids2.substring(0, ids2.length() -1);
-		
+		if (ids1.length() > 0) {
+			ids1 = "[" + ids1.substring(0, ids1.length() -1) + "] ";
+		}
+		if (ids2.length() > 0) {
+			ids2 =       ids2.substring(0, ids2.length() -1);
+		}
+
 		// 본문 작성
 		context = "■ 국가 식별 : " + countryKO + " - " + ip + "\r\n\r\n"
-		        + "■ 불법 접근 기간\r\n" + time1 + "\r\n\r\n"
-		        + "■ 불법 접근에 이용한 ID 목록\r\n1) LIST : " + ids + "\r\n1) DIST : " + ids2 + "\r\n\r\n"
-		        + context;
-		        
+				+ "■ 불법 접근 기간\r\n" + time1 + "\r\n\r\n"
+				+ "■ 불법 접근에 이용한 ID 목록\r\n1) LIST : " + ids + "\r\n1) DIST : " + ids2 + "\r\n\r\n"
+				+ context;
+
 		// APNIC 와 KRNIC에도 country 정보가 없으면 디렉토리 국가 추가, 접속지 정보 파일 생성을 영문으로 생성
 		if (countryKO.length() == 0) {
 			countryKO = countryEN;
@@ -653,29 +715,29 @@ public class ServULogRankingOutput {
 			/* java ver 1.7 over
 			Path newDir = FileSystems.getDefault().getPath(path5.trim());
 			Files.createDirectory(newDir);		// 디릭토리 마지막에 공백이 드가면 에러나므로 trim 처리했음
-			*/
-		} catch (Exception e) {
+			 */
+		} catch (final Exception e) {
 			e.printStackTrace();
 		}
 
 		// APNIC 정보를 파일로 생성
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(path5 + "\\" + ip + ".txt"));
+			final BufferedWriter out = new BufferedWriter(new FileWriter(path5 + "\\" + ip + ".txt"));
 			out.write(context);
 			out.newLine();
 			out.close();
-		}  catch (Exception e) {
+		}  catch (final Exception e) {
 			e.printStackTrace();
 		}
 
 		// denyIP 리포트 작성용 데이터 - 회원이 포함되지 않은 아이피 차단
 		num = num.replaceAll(",","").trim();
 		if ("N".equals(members)) {
-			int intNum = Integer.parseInt(num);
+			final int intNum = Integer.parseInt(num);
 			// 대한민국,일본의 접속시 DENY_BLACKLIST_LIMIT 건 이상만 접근금지 IP로 지정
 			if (("KR".equals(countryEN) || "JP".equals(countryEN)) && intNum >= DENY_BLACKLIST_LIMIT) {
 				denyIP_krjpUser.add("\"" + ip + "\",\"" + "[" + countryEN + "," + num.trim() + "] " + address + "\",\"0\"");
-			// 대한민국,일본 이외에는 무조건 막음
+				// 대한민국,일본 이외에는 무조건 막음
 			} else if (!("KR".equals(countryEN) || "JP".equals(countryEN))) {
 				denyIP_outUser.add("\"" + ip + "\",\"" + "[" + countryEN + "," + num.trim() + "] " + address + "\",\"0\"");
 			}
@@ -685,15 +747,15 @@ public class ServULogRankingOutput {
 		}
 		denyIP_inoutUser.add("\"" + ip + "\",\"" + "[" + countryEN + "," + num.trim() + "] " + address + "\",\"0\"");
 	}
-	
+
 	private int reConnCnt = 1;
-	public String getNation(String ip) {
+	public String getNationByApnic(final String ip) {
 		String address   ="";
 		String countryEN = "";
 		String countryKO = "";
-    	String context   = "http://wq.apnic.net/apnic-bin/whois.pl?searchtext=" + ip;
+		String context   = "http://wq.apnic.net/apnic-bin/whois.pl?searchtext=" + ip;
 		try {
-			Document doc = Jsoup.connect(context).get();
+			final Document doc = Jsoup.connect(context).get();
 			context = doc.text();
 			context = context.replaceAll(":        ", " : ");
 			context = context.replaceAll("%", "\r\n■");
@@ -715,35 +777,66 @@ public class ServULogRankingOutput {
 					countryEN = (row.split(":")[1]).trim();
 				}
 			}
-			if (address.length() > 0) address = address.substring(0, address.length() -1);
-			
+			if (address.length() > 0) {
+				address = address.substring(0, address.length() -1);
+			}
+
 			// KRNIC에서 국가정보 획득 (APNIC에 없을 경우)
-			if (countryEN.length() == 0) countryEN = sla.getNation(ip);
+			if (countryEN.length() == 0) {
+				countryEN = sla.getNation(ip);
+			}
 			if (countryEN.length() > 0) {
 				countryEN = countryEN.toUpperCase();
 				countryKO = getProperties(countryEN);
 			}
-			
-		} catch (Exception e) {
+
+		} catch (final Exception e) {
+			getNationBydbIp(ip);
+		}
+		return countryEN + D1 + countryKO + D1 + address + D1 + context;
+	}
+
+	public String getNationBydbIp(final String ip) {
+		String address   ="";
+		String countryEN = "";
+		String countryKO = "";
+		String context   = "http://api.db-ip.com/v2/free/" + ip;
+		try {
+			final Document doc = Jsoup.connect(context)
+					.header("content-type", "application/json;charset=UTF-8")
+					.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+					.header("accept-encoding", "gzip, deflate, br")
+					.header("accept-language", "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7")
+					.userAgent("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36")
+					.ignoreContentType(true).get();
+
+			final JSONParser jpr = new JSONParser();
+			final JSONObject temp = (JSONObject) jpr.parse(doc.text());
+			countryEN = (String) temp.get("countryCode");
+			countryKO = getProperties(countryEN);
+			address = (String) temp.get("countryName") + " " + (String) temp.get("stateProv") + " " + (String) temp.get("city");
+			context = (String) temp.get("ipAddress");
+
+		} catch (final Exception e) {
 			//e.printStackTrace();
 			System.out.println("\n정보획득 실패로 재시도 " + reConnCnt + "회 : " + ip);
 			if (reConnCnt <= 3) {
 				reConnCnt++;
-				getNation(ip);
+				getNationByApnic(ip);
 			}
+			reConnCnt = 1;
 		}
-		reConnCnt = 1;
 		return countryEN + D1 + countryKO + D1 + address + D1 + context;
 	}
-	
-	public String getProperties(String nation) {
+
+	public String getProperties(final String nation) {
 		String val = "";
 		BufferedReader br = null;
 		try {
-			Properties properties = new Properties();
+			final Properties properties = new Properties();
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(NATION_ROOT),"EUC-KR"));
 			properties.load(br);
-			
+
 			/* 전체검색
 			Enumeration<Object> key = properties.keys();
 			String s = "";
@@ -751,91 +844,93 @@ public class ServULogRankingOutput {
 				s = properties.getProperty((String) key.nextElement());
 				System.out.println(s);
 			} */
-//  135\D69)  ★ 불법접근 IP：213,771건에 대한 리스트 보기 ★\0135）     123회 ← 회원포함(　)    210.13.73.29：auto,bin,db2inst1,mm…㎯(　)    210.13.73.29：auto,bin,db2inst1,
+			//  135\D69)  ★ 불법접근 IP：213,771건에 대한 리스트 보기 ★\0135）     123회 ← 회원포함(　)    210.13.73.29：auto,bin,db2inst1,mm…㎯(　)    210.13.73.29：auto,bin,db2inst1,
 			val = properties.getProperty(nation);
 			val = val.trim();
 			val = val.length()==0?val:val.split(":")[1];
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 			System.out.println("★ 프로퍼티에 없는 국가 : " + nation);
 			ioe.printStackTrace();
 		} finally {
 			if (br != null) {
 				try {
 					br.close();
-				} catch (IOException ioe) {
+				} catch (final IOException ioe) {
 					ioe.printStackTrace();
 				}
 			}
 		}
 		return val;
 	}
-	
+
 	/**
 	 * 자바로 utf-8 포맷의 파일을 수정하는 도중 한글 깨짐 현상이 발생
 	 * 내용을 읽을 때
-	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	 * FileInputStream fis=new FileInputStream(filename);
 	 * InputStreamReader isr=new InputStreamReader(fis,"UTF-8");
 	 * BufferedReader br=new BufferedReader(isr);
-	 * 
+	 *
 	 * 파일에 내용을 쓸 때에는
-	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	 * FileOutputStream fos = new FileOutputStream(savefilename);
 	 * OutputStreamWriter osw=new OutputStreamWriter(fos,"UTF-8");
 	 * BufferedWriter bw=new BufferedWriter(osw);
 	 */
-	public void makeFileDenyIpList(String writePath, List<String> list) {
+	public void makeFileDenyIpList(final String writePath, final List<String> list) {
 		String str ="";
-		Iterator<String> i = list.iterator();	// 반복자(Iterator)에 리스트 등록
+		final Iterator<String> i = list.iterator();	// 반복자(Iterator)에 리스트 등록
 		while (i.hasNext()) {					// 반복자에 다음이 있는 동안에
 			str = str + i.next() + "\r\n";
 		}
 		try {
-			FileOutputStream fos   = new FileOutputStream(writePath + report_date + ".txt");
-			OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-			BufferedWriter bw      = new BufferedWriter(osw);
+			final FileOutputStream fos   = new FileOutputStream(writePath + report_date + ".txt");
+			final OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+			final BufferedWriter bw      = new BufferedWriter(osw);
 			bw.write(str);
-//			bw.newLine();
+			//			bw.newLine();
 			bw.close();
 			osw.close();
 			fos.close();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void mergeFileDenyIpList(String writePath) {
 		String strRL    = null;
 		String str1="", str2="", str3="", str4="";
 		String fileName = "";
 		File   listFile = null;
-		File [] listFileArray = new File(writePath.substring(0, writePath.lastIndexOf("\\"))).listFiles();
-		List<String> denyIpList1 = new ArrayList<String>();
+		final File [] listFileArray = new File(writePath.substring(0, writePath.lastIndexOf("\\"))).listFiles();
+		List<String> denyIpList1 = new ArrayList<>();
 		for (int i=0 ; i<listFileArray.length ; i++) {
 			listFile = listFileArray[i];
 			fileName = listFile.getName();
 			str1 = writePath.substring(writePath.lastIndexOf("\\") +1, writePath.length());
 			if (fileName.indexOf(str1) > -1) {
 				try {
-				    //BufferedReader in = new BufferedReader(new FileReader(listFile.getPath())); // 한글깨짐 그래서 아래로 인코딩(txt 파일처럼 ansi 로 인코딩된경우에만) 
-				    BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(listFile.getPath()), "UTF-8"));
-				    while ((strRL = in.readLine()) != null) {
-				    	if (strRL.indexOf("\"Description\"") > -1) {
-				    		continue;
-				    	}
-                        if (strRL.length() > 0) denyIpList1.add(strRL);
-				    }
-				    in.close();
-				} catch (IOException e) {
-				    e.printStackTrace();
+					//BufferedReader in = new BufferedReader(new FileReader(listFile.getPath())); // 한글깨짐 그래서 아래로 인코딩(txt 파일처럼 ansi 로 인코딩된경우에만)
+					final BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(listFile.getPath()), "UTF-8"));
+					while ((strRL = in.readLine()) != null) {
+						if (strRL.indexOf("\"Description\"") > -1) {
+							continue;
+						}
+						if (strRL.length() > 0) {
+							denyIpList1.add(strRL);
+						}
+					}
+					in.close();
+				} catch (final IOException e) {
+					e.printStackTrace();
 				}
 			}
 		}
 		// ID 중복제거
-		TreeSet<String> distinctVerifi = new TreeSet<String>(denyIpList1);
-		denyIpList1 = new ArrayList<String>(distinctVerifi);
+		final TreeSet<String> distinctVerifi = new TreeSet<>(denyIpList1);
+		denyIpList1 = new ArrayList<>(distinctVerifi);
 		// 공격 횟수가 많은 순으로 정렬
-		List<String> denyIpList2 = new ArrayList<String>();
+		final List<String> denyIpList2 = new ArrayList<>();
 		for (int i=0 ; i<denyIpList1.size() ; i++) {
 			// "1.240.111.238","[KR,134] Jung-gu SK NamsanGreen Bldg,Namdaemunno 5(o)-ga, Seoul","0"
 			str3 = denyIpList1.get(i);
@@ -847,7 +942,7 @@ public class ServULogRankingOutput {
 			denyIpList2.add(str3);
 		}
 		Collections.sort(denyIpList2, Collections.reverseOrder());
-		Iterator<String> iterator = denyIpList2.iterator();
+		final Iterator<String> iterator = denyIpList2.iterator();
 		while(iterator.hasNext()) {
 			str3 = iterator.next();
 			str2 = str2 + str3.substring(str3.indexOf(",") +1, str3.length()) + "\r\n";
@@ -855,33 +950,33 @@ public class ServULogRankingOutput {
 		str2 = "\"IP\",\"Description\",\"Allow\"\r\n" + str2;
 		writePath = writePath.replaceAll("User.", ".");
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(writePath + report_date.subSequence(0, 4) + ".txt"));
+			final BufferedWriter out = new BufferedWriter(new FileWriter(writePath + report_date.subSequence(0, 4) + ".txt"));
 			out.write(str2);
 			out.close();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("\t" + report_date.subSequence(0, 4) + "년 불법 IP : " + str1 + " 출력 : " + denyIpList1.size() + "건");
 	}
-	
-	public void fileCopy(File source, File target) throws IOException {
+
+	public void fileCopy(final File source, final File target) throws IOException {
 		// 디렉토리인 경우
 		if (source.isDirectory()) {
 			// 복사될 Directory가 없으면 만듭니다.
 			if (!target.exists()) {
 				target.mkdir();
 			}
-			String[] subDir = source.list();
+			final String[] subDir = source.list();
 			for (int i = 0; i < subDir.length; i++) {
 				fileCopy(new File(source, subDir[i]), new File(target, subDir[i]));
 			}
 		} else {
 			// 파일인 경우
-			InputStream in = new FileInputStream(source);
-			OutputStream out = new FileOutputStream(target);
+			final InputStream in = new FileInputStream(source);
+			final OutputStream out = new FileOutputStream(target);
 
 			// Copy the bits from instream to outstream
-			byte[] buf = new byte[1024];
+			final byte[] buf = new byte[1024];
 			int len;
 			while ((len = in.read(buf)) > 0) {
 				out.write(buf, 0, len);
@@ -890,15 +985,17 @@ public class ServULogRankingOutput {
 			out.close();
 		}
 	}
-	
+
 	public void copyRoot2BlackList() throws IOException {
-		
-		File file = new File(notice_root);
-		File [] listFileArray = file.listFiles();
+
+		final File file = new File(notice_root);
+		final File [] listFileArray = file.listFiles();
 		File listFile = null;
 		for (int j=0 ; j<listFileArray.length ; j++) {
 			listFile = listFileArray[j];
-			if (listFile.getName().contains("D69)")) break;
+			if (listFile.getName().contains("D69)")) {
+				break;
+			}
 		}
 		if (listFile == null) {
 			System.out.println("\tBLACKLIST에 카피되지 않았습니다");
@@ -908,18 +1005,18 @@ public class ServULogRankingOutput {
 			fileCopy(listFile, new File(BLACKLIST_ROOT + "\\" + lastPath));
 		}
 	}
-	
-	public boolean makeDir(String path) {
+
+	public boolean makeDir(final String path) {
 		boolean b = true;
 		try {
-			File file = new File(path);
+			final File file = new File(path);
 			file.mkdir();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			b = false;
 		}
 		return b;
 	}
-/*	
+	/*
 	// http://pusgochu.blog.me/10096214835
 	public void sendMail() {
 		// email 서버 DNS 또는 IP
@@ -967,5 +1064,5 @@ public class ServULogRankingOutput {
 			e.printStackTrace();
 		}
 	}
-*/
+	 */
 }
