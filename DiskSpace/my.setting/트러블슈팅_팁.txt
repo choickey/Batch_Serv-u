@@ -1,0 +1,16 @@
+01. 에러케이스
+
+명령어 => java -classpath ../lib/json-simple-1.1.1.jar;../lib/jsoup-1.7.3.jar; com.donzbox.file.action.DiskSpaceOutput
+
+Exception in thread "main" java.lang.UnsatisfiedLinkError: D:\My Data\WWW\App Source\DiskSpace\classes\DiskSpace.dll: Can't load AMD 64-bit .dll on a IA 32-bit platform
+        at java.lang.ClassLoader$NativeLibrary.load(Native Method)
+        at java.lang.ClassLoader.loadLibrary0(Unknown Source)
+        at java.lang.ClassLoader.loadLibrary(Unknown Source)
+        at java.lang.Runtime.load0(Unknown Source)
+        at java.lang.System.load(Unknown Source)
+        at com.donzbox.file.action.DiskSpace.<init>(DiskSpace.java:21)
+        at com.donzbox.file.action.DiskSpaceOutput.<clinit>(DiskSpaceOutput.java:47)
+
+
+해결법 => 하기와 같이 실행 자바를 명시해 준다
+"C:\Program Files\Java\jdk1.7.0_71\bin\java" -classpath ../lib/json-simple-1.1.1.jar;../lib/jsoup-1.7.3.jar; com.donzbox.file.action.DiskSpaceOutput
