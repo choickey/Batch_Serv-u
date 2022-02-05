@@ -1,0 +1,3 @@
+@ECHO OFF
+
+"D:\My Data\WWW\Ftp Factory\ftp.DonzBox.com_Result\sustat\HiddenStart_4.2\hstart64.exe" /NOCONSOLE "D:\My Data\WWW\Ftp Factory\ftp.DonzBox.com_Result\sustat\sustat.bat"
